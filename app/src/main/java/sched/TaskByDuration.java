@@ -13,10 +13,15 @@ public class TaskByDuration extends Task {
     public int compareTo(Task task) {
         if (this.duration < task.duration) {
             return -1;
-        } else if (this.duration >= task.duration) {
+        } else if (this.duration > task.duration) {
             return 1;
         } else {
             return 0;
         }
     }
+
+    // @Override
+    // public String toString() {
+    // return super.toString() + ", Duration: " + duration;
+    // }
 }

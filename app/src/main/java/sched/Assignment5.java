@@ -2,34 +2,40 @@
 package sched;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Assignment5 {
     public static void main(String[] args) {
         simpleQueueTest();
-        // scheduleTasks("taskset1.txt");
-        // scheduleTasks("taskset2.txt");
-        // scheduleTasks("taskset3.txt");
-        // scheduleTasks("taskset4.txt");
-        // scheduleTasks("taskset5.txt");
+        scheduleTasks("taskset1.txt");
+        scheduleTasks("taskset2.txt");
+        scheduleTasks("taskset3.txt");
+        scheduleTasks("taskset4.txt");
+        scheduleTasks("taskset5.txt");
     }
 
     public static void scheduleTasks(String taskFile) {
-        // TODO: Uncomment code here as you complete the tasks and scheduling algorithm
+        // DONE: Uncomment code here as you complete the tasks and scheduling algorithm
         ArrayList<Task> tasksByDeadline = new ArrayList<>();
         ArrayList<Task> tasksByStart = new ArrayList<>();
         ArrayList<Task> tasksByDuration = new ArrayList<>();
 
         readTasks(taskFile, tasksByDeadline, tasksByStart, tasksByDuration);
 
+        System.out.println("Deadline Priority : " + taskFile);
         schedule("Deadline Priority : " + taskFile, tasksByDeadline);
+
+        System.out.println("Startime Priority : " + taskFile);
         schedule("Startime Priority : " + taskFile, tasksByStart);
+
+        System.out.println("Duration Priority : " + taskFile);
         schedule("Duration priority : " + taskFile, tasksByDuration);
     }
 
     public static void simpleQueueTest() {
-        // TODO: Uncomment code here for a simple test of your priority queue code
+        // DONE: Uncomment code here for a simple test of your priority queue code
         PriorityQueue<Integer> queue = new PriorityQueue<>();
         queue.enqueue(9);
         queue.enqueue(7);
@@ -51,17 +57,25 @@ public class Assignment5 {
             ArrayList<Task> tasksByDeadline,
             ArrayList<Task> tasksByStart,
             ArrayList<Task> tasksByDuration) {
-        // TODO: Write your task reading code here
+        // DONE: Write your task reading code here
         File file = new File(filename);
-        Scanner sc = new Scanner(file);
-        int count = 0;
-        while (sc.hasNextLine()) {
-            String line = sc.nextLine();
-            String[] priorities = line.split("[ ]");
-            int start = Integer.parseInt(priorities[0]);
-            int deadline = Integer.parseInt(priorities[1]);
-            int duration = Integer.parseInt(priorities[2]);
-            tasksByStart.add(new TaskByStart(start, deadline, duration));
+        try {
+            Scanner sc = new Scanner(file);
+            int count = 1;
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine();
+                String[] priorities = line.split("\\s+");
+                int start = Integer.parseInt(priorities[0]);
+                int deadline = Integer.parseInt(priorities[1]);
+                int duration = Integer.parseInt(priorities[2]);
+                tasksByStart.add(new TaskByStart(count, start, deadline, duration));
+                tasksByDeadline.add(new TaskByDeadline(count, start, deadline, duration));
+                tasksByDuration.add(new TaskByDuration(count, start, deadline, duration));
+                count += 1;
+            }
+            sc.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
     }
 
@@ -69,6 +83,39 @@ public class Assignment5 {
      * Given a set of tasks, schedules them and reports the scheduling results
      */
     public static void schedule(String label, ArrayList<Task> tasks) {
-        // TODO: Write your scheduling algorithm here
+        // DONE: Write your scheduling algorithm here
+        var queue = new PriorityQueue<Task>();
+        int clock = 0;
+        var tasksLate = 0;
+        var totalLate = 0;
+        while (!tasks.isEmpty() || !queue.isEmpty()) {
+            clock += 1;
+            while (!tasks.isEmpty() && clock >= tasks.get(0).start) {
+                queue.enqueue(tasks.remove(0));
+            }
+            if (!queue.isEmpty()) {
+                var taskout = queue.dequeue();
+                if (clock > taskout.deadline) {
+                    taskout.late += 1;
+                }
+                // Fix the second tab
+                System.out.print("\tTime\t" + clock + ": " + taskout.toString());
+                taskout.duration -= 1;
+                if (taskout.duration > 0) {
+                    queue.enqueue(taskout);
+                } else {
+                    System.out.print(" **");
+                    if (taskout.late > 0) {
+                        totalLate += taskout.late;
+                        tasksLate += 1;
+                        System.out.print(" Late " + taskout.late);
+                    }
+                }
+                System.out.println();
+            } else {
+                System.out.println("\tTime\t" + clock + ": ---");
+            }
+        }
+        System.out.println("Tasks late " + tasksLate + " Total Late " + totalLate + "\n");
     }
 }

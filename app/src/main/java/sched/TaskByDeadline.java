@@ -19,4 +19,9 @@ public class TaskByDeadline extends Task {
             return 0;
         }
     }
+
+    // @Override
+    // public String toString() {
+    // return super.toString() + ", Deadline: " + deadline;
+    // }
 }

@@ -1,16 +1,12 @@
 
 package sched;
 
+import java.util.ArrayList;
 import java.util.Stack;
 
 public class PriorityQueue<E extends Comparable<E>> {
     private Node root;
     private Stack<Node> stack;
-
-    @Override
-    public String toString() {
-        return "PriorityQueue [root=" + root + "]";
-    }
 
     PriorityQueue() {
         this.root = null;
@@ -29,7 +25,7 @@ public class PriorityQueue<E extends Comparable<E>> {
             this.root = newNode;
             return;
         }
-        root = insert(newNode, this.root);
+        root = insert(this.root, newNode);
         balance();
     }
 
@@ -49,6 +45,13 @@ public class PriorityQueue<E extends Comparable<E>> {
         }
     }
 
+    public E peakNextValue() {
+        if (this.root == null) {
+            return null;
+        }
+        return this.root.value;
+    }
+
     private Node merge(Node lhs, Node rhs) {
         if (lhs.right == null) {
             lhs.right = rhs;
@@ -56,24 +59,22 @@ public class PriorityQueue<E extends Comparable<E>> {
             return lhs;
         } else if (lhs.right.compareTo(rhs) < 0) {
             lhs.right = merge(lhs.right, rhs);
-            stack.push(lhs.right);
         } else {
             lhs.right = merge(rhs, lhs.right);
-            stack.push(lhs.right);
         }
-        return null;
+        return lhs;
     }
 
-    private Node insert(Node value, Node start) {
-        if (value == null) {
-            return start;
-        } else if (start == null) {
-            return value;
+    private Node insert(Node first, Node second) {
+        if (first == null) {
+            return second;
+        } else if (second == null) {
+            return first;
         }
-        if (value.compareTo(start) < 0) {
-            return merge(value, start);
+        if (first.compareTo(second) < 0) {
+            return merge(first, second);
         } else {
-            return merge(start, value);
+            return merge(second, first);
         }
     }
 
@@ -103,6 +104,11 @@ public class PriorityQueue<E extends Comparable<E>> {
         return Math.min(depthToNull(value.left, pos + 1), depthToNull(value.right, pos + 1));
     }
 
+    @Override
+    public String toString() {
+        return "PriorityQueue [root=" + root + "]";
+    }
+
     private class Node {
         private E value;
         private Node left;
@@ -114,6 +120,11 @@ public class PriorityQueue<E extends Comparable<E>> {
 
         public int compareTo(Node rhs) {
             return this.value.compareTo(rhs.value);
+        }
+
+        @Override
+        public String toString() {
+            return "value: " + value;
         }
     }
 }
