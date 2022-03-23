@@ -4,6 +4,7 @@ package sched;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class Assignment5 {
@@ -88,15 +89,19 @@ public class Assignment5 {
         int clock = 0;
         var tasksLate = 0;
         var totalLate = 0;
+        var lates = new HashMap<Task, Integer>();
         while (!tasks.isEmpty() || !queue.isEmpty()) {
             clock += 1;
             while (!tasks.isEmpty() && clock >= tasks.get(0).start) {
-                queue.enqueue(tasks.remove(0));
+                var tempTask = tasks.remove(0);
+                lates.put(tempTask, 0);
+                queue.enqueue(tempTask);
             }
             if (!queue.isEmpty()) {
                 var taskout = queue.dequeue();
                 if (clock > taskout.deadline) {
-                    taskout.late += 1;
+                    lates.put(taskout, lates.get(taskout) + 1);
+                    // taskout.late += 1;
                 }
                 // Fix the second tab
                 System.out.print("\tTime\t" + clock + ": " + taskout.toString());
@@ -105,10 +110,10 @@ public class Assignment5 {
                     queue.enqueue(taskout);
                 } else {
                     System.out.print(" **");
-                    if (taskout.late > 0) {
-                        totalLate += taskout.late;
+                    if (lates.get(taskout) > 0) {
+                        totalLate += lates.get(taskout);
                         tasksLate += 1;
-                        System.out.print(" Late " + taskout.late);
+                        System.out.print(" Late " + lates.get(taskout));
                     }
                 }
                 System.out.println();
